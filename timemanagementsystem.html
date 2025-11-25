@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time Tracking</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.7.0/fonts/remixicon.css" rel="stylesheet" />
+  <style>
+    @font-face {
+      font-family: 'Digital-7';
+      src: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/184191/Digital-7.eot?#iefix') format('embedded-opentype'),
+        url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/184191/Digital-7.woff') format('woff'),
+        url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/184191/Digital-7.ttf') format('truetype'),
+        url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/184191/Digital-7.svg#Digital-7') format('svg');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: black;
+      color: white;
+      font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+    #header {
+      height: 80px;
+      background-color: black;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 10;
+      padding: 0 30px;
+    }
+
+    #logo {
+      font-size: 60px;
+      font-weight: bold;
+      color: white;
+      letter-spacing: 5px;
+      text-shadow: 0 0 3px white;
+      display: flex;
+      align-items: center;
+    }
+
+    #logo i {
+      margin-left: 10px;
+      font-size: 40px;
+    }
+
+    #navbar {
+      display: flex;
+      align-items: center;
+      gap: 25px;
+      padding-right: 20px;
+    }
+
+    #navbar a {
+      text-decoration: none;
+      font-size: 20px;
+      color: white;
+      transition: all 0.3s ease;
+      padding: 8px 12px;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    #navbar a:hover {
+      color: #00ffff;
+      text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+      background-color: rgba(0, 255, 255, 0.05);
+    }
+
+    #page1 {
+      height: 100vh;
+      width: 100%;
+      padding-top: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      flex-direction: column;
+      background-color: black;
+      overflow: hidden;
+    }
+
+    #main-content {
+      color: white;
+      max-width: 800px;
+      opacity: 0;
+      transform: translateY(-40px);
+      transition: opacity 1.5s ease, transform 1.5s ease;
+    }
+
+    #main-content.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    #main-content h1 {
+      font-size: 42px;
+      margin-bottom: 15px;
+      line-height: 1.2;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-shadow: 0 0 5px white;
+      animation: slideInLeft 2s ease forwards;
+    }
+
+    @keyframes slideInLeft {
+      0% {
+        opacity: 0;
+        transform: translateX(-250px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    #typing-text {
+      font-size: 20px;
+      line-height: 1.6;
+      color: #00ffff;
+      white-space: pre-wrap;
+      overflow: hidden;
+      display: inline-block;
+      border-right: 2px solid #00ffff;
+      text-shadow: 0 0 3px #00ffff, 0 0 6px #00ffff, 0 0 10px #00ffff;
+    }
+
+    .cursor-blink {
+      animation: blink 0.7s steps(1) infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      50%,
+      100% {
+        border-color: #00ffff;
+      }
+
+      25%,
+      75% {
+        border-color: transparent;
+      }
+    }
+    #page2 {
+      display: flex;
+      flex-wrap: wrap;
+      height: 100vh;
+      background-color: black;
+      color: white;
+      padding-top: 100px;
+    }
+
+    #page2-left {
+      flex: 1;
+      min-width: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px;
+    }
+
+    #page2-left h2 {
+      font-size: 36px;
+      text-shadow: 0 0 5px #00ffff;
+      margin-bottom: 20px;
+    }
+
+    .about-text {
+      font-size: 18px;
+      line-height: 1.6;
+      color: #00ffff;
+      text-shadow: 0 0 3px #00ffff, 0 0 6px #00ffff;
+      margin-bottom: 15px;
+      display: inline-block;
+      white-space: pre-wrap;
+      overflow: hidden;
+      border-right: none;
+    }
+
+    #page2-right {
+      flex: 1;
+      min-width: 300px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    figure {
+      width: 210px;
+      height: 210px;
+      transform-style: preserve-3d;
+      transform: rotateX(-35deg) rotateY(45deg);
+      transition: 2s;
+    }
+
+    figure:hover {
+      transform: rotateX(-50deg) rotateY(45deg);
+    }
+
+    .face {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      transform-origin: center;
+      background: #000;
+      text-align: center;
+    }
+
+    .face p {
+      font-size: 180px;
+      font-family: 'Digital-7';
+      margin-top: 20px;
+      color: #2982FF;
+      text-shadow: 0px 0px 5px #000;
+      animation: color 10s infinite;
+      line-height: 180px;
+    }
+
+    .front {
+      transform: translate3d(0, 0, 105px);
+      background: #111;
+    }
+
+    .left {
+      transform: rotateY(-90deg) translate3d(0, 0, 105px);
+      background: #151515;
+    }
+
+    .top {
+      transform: rotateX(90deg) translate3d(0, 0, 105px);
+      background: #222;
+    }
+
+    @keyframes color {
+      0% {
+        color: #2982ff;
+        text-shadow: 0px 0px 5px #000;
+      }
+
+      50% {
+        color: #cc4343;
+        text-shadow: 0px 0px 5px #ff0000;
+      }
+    }
+    #page3 {
+      min-height: 100vh;
+      width: 100%;
+      padding: 100px 0 60px;
+      text-align: left;
+      background-color: black;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+
+    bdy {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    bdy {
+      background: #000;
+      color: #e6f7ff;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      padding: 32px;
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+      border-radius: 12px;
+      padding: 28px;
+      padding-top: 16px;
+    }
+
+    .neon {
+      color: #aaffff;
+      text-shadow:
+        0 0 6px rgba(170, 255, 255, 0.18),
+        0 0 12px rgba(170, 255, 255, 0.12),
+        0 0 24px rgba(124, 58, 237, 0.10);
+    }
+
+    .hero h1 {
+      font-size: clamp(24px, 3.6vw, 40px);
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero .lead {
+      font-size: 1rem;
+      color: #bfeffc;
+      margin-bottom: 14px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 18px
+    }
+
+    .btn {
+      background: linear-gradient(90deg, #06b6d4, #7c3aed);
+      color: #021024;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      box-shadow: 0 6px 18px rgba(124, 58, 237, 0.12);
+      transition: transform .12s ease;
+    }
+
+    .btn:active {
+      transform: translateY(1px)
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #dbeafe;
+    }
+
+    .steps {
+      margin-top: 6px
+    }
+
+    .steps h2 {
+      font-size: clamp(18px, 2.2vw, 24px);
+      margin-top: 18px;
+      margin-bottom: 8px;
+    }
+
+    .steps p {
+      color: #cfeff8;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      margin-bottom: 8px;
+      font-size: 1rem;
+    }
+
+    .code-block {
+      background: rgba(255, 255, 255, 0.02);
+      color: #bdefff;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      overflow: auto;
+      margin: 12px 0 20px 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+      font-size: .95rem;
+      line-height: 1.5;
+    }
+    .small {
+      font-size: .92rem;
+      color: #9fe7ff
+    }
+    .typing-caret::after {
+      content: "";
+      display: inline-block;
+      width: 10px;
+      height: 1.05em;
+      margin-left: 6px;
+      background: linear-gradient(180deg, #bdf0ff, #80e0ff);
+      animation: blink 1s steps(2, end) infinite;
+      vertical-align: middle;
+      border-radius: 2px;
+      opacity: .95;
+    }
+
+    @keyframes blink {
+
+      0%,
+      50% {
+        opacity: 1
+      }
+
+      51%,
+      100% {
+        opacity: 0
+      }
+    }
+
+    .type {
+      color: #cfffff;
+      text-shadow:
+        0 0 6px rgba(170, 255, 255, 0.14),
+        0 0 18px rgba(124, 58, 237, 0.06);
+      min-height: 1.2em;
+      display: block;
+    }
+    @media (max-width:640px) {
+      .page {
+        padding: 18px
+      }
+
+      .controls {
+        flex-direction: column;
+        align-items: flex-start
+      }
+    }
+.page4 {
+      background-color: black;
+      color: white;
+      font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    #header {
+      height: 80px;
+      background-color: black;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 10;
+      padding: 0 30px;
+      border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+    }
+
+    #logo {
+      font-size: 50px;
+      font-weight: bold;
+      color: white;
+      letter-spacing: 4px;
+      text-shadow: 0 0 3px white;
+      display: flex;
+      align-items: center;
+    }
+
+    #logo i {
+      margin-left: 10px;
+      font-size: 35px;
+    }
+
+    #navbar {
+      display: flex;
+      align-items: center;
+      gap: 25px;
+    }
+
+    #navbar a {
+      text-decoration: none;
+      font-size: 18px;
+      color: white;
+      transition: all 0.3s ease;
+      padding: 8px 12px;
+      border-radius: 5px;
+    }
+
+    #navbar a:hover {
+      color: #00ffff;
+      text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff;
+      background-color: rgba(0, 255, 255, 0.05);
+    }
+
+    .container {
+      padding: 120px 40px 60px;
+      max-width: 900px;
+      margin: auto;
+      text-align: left;
+    }
+
+    h1 {
+      font-size: 40px;
+      color: #00ffff;
+      text-shadow: 0 0 8px #00ffff, 0 0 15px #00ffff;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .section {
+      margin-bottom: 40px;
+    }
+
+    .section h2 {
+      color: #00ffff;
+      text-shadow: 0 0 5px #00ffff;
+      margin-bottom: 10px;
+      font-size: 26px;
+    }
+
+    .section p {
+      font-size: 18px;
+      line-height: 1.6;
+      color: #dff;
+    }
+
+    .contact-form {
+      margin-top: 30px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.05);
+    }
+
+    label {
+      display: block;
+      font-size: 16px;
+      color: #00ffff;
+      margin-bottom: 8px;
+      text-shadow: 0 0 3px #00ffff;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #00ffff;
+      background: black;
+      color: #fff;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      box-shadow: 0 0 10px #00ffff;
+    }
+
+    button {
+      background: linear-gradient(90deg, #06b6d4, #7c3aed);
+      color: #021024;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      box-shadow: 0 6px 18px rgba(124, 58, 237, 0.2);
+      transition: transform 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    .social-icons {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .social-icons a {
+      color: #00ffff;
+      font-size: 28px;
+      margin: 0 10px;
+      transition: 0.3s;
+    }
+
+    .social-icons a:hover {
+      color: #7c3aed;
+      text-shadow: 0 0 8px #7c3aed;
+    }
+
+    footer {
+      text-align: center;
+      color: #aaa;
+      padding: 30px 0;
+      font-size: 14px;
+      border-top: 1px solid rgba(0, 255, 255, 0.1);
+      margin-top: 40px;
+    }
+  </style>
+
+  </style>
+</head>
+
+<body>
+  <div id="header">
+    <div id="logo">TI!\/!E <i class="ri-hourglass-fill"></i></div>
+    <div id="navbar">
+      <a href="logintime.html">Login</a>
+      <a href="#" id="about-link">About</a>
+      <a href="use.html">Use</a>
+      <a href="task.html">Task</a>
+      <a href="help.html">Help</a>
+      <a href="help.html">Contact</a>
+    </div>
+  </div>
+  <div id="page1">
+    <div id="main-content">
+      <h1>Welcome to Time Tracking</h1>
+      <p id="typing-text"></p>
+    </div>
+  </div>
+
+  <div id="page2">
+    <div id="page2-left">
+      <h2>About Time Tracking</h2>
+      <p class="about-text"
+        data-text="Time Tracking is designed to help you stay productive and organized. Keep track of your work hours, manage tasks efficiently, and get insights into your daily activities.">
+      </p>
+      <p class="about-text"
+        data-text="With intuitive dashboards and easy-to-use tools, you can improve your efficiency and make every minute count. Whether you are a freelancer, a team manager, or someone who wants to optimize their time, Time Tracking has got you covered.">
+      </p>
+      <p class="about-text"
+        data-text="Stay focused, set goals, and analyze your productivity trends — all in one place."></p>
+    </div>
+    <div id="page2-right">
+      <figure>
+        <div class="face top">
+          <p id="h">00</p>
+        </div>
+        <div class="face front">
+          <p id="m">00</p>
+        </div>
+        <div class="face left">
+          <p id="s">00</p>
+        </div>
+      </figure>
+    </div>
+  </div>
+
+  <bdy>
+    <div id="page3">
+      <main class="page">
+        <header class="hero">
+          <h1 class="type neon" data-text="How to use the To-Do UI — Step by step"> </h1>
+          <p class="lead type neon"
+            data-text="Follow these quick steps to add, complete, undo, and remove tasks in the To-Do Manager. The instructions below are typed out so you can follow along visually.">
+          </p>
+          <div class="controls">
+            <button id="replay" class="btn">🔁 Replay typing</button>
+            <a class="btn btn-ghost" href="#" id="openDemo" title="Open demo app (if you have the To-Do app)">Open To-Do
+              demo</a>
+          </div>
+        </header>
+
+        <section class="steps">
+          <h2 class="type neon" data-text="1. Add a task"> </h2>
+          <p class="type" data-text="• Click the input box labeled 'Enter your task' and type a short description (e.g., 'Write blog post'). 
+• Press the 'Add Task' button or hit Enter. 
+• The task appears instantly in the 'Pending Tasks' list and the Summary updates."> </p>
+
+          <h2 class="type neon" data-text="2. Mark a task as completed"> </h2>
+          <p class="type" data-text="• Locate the pending task you finished. 
+• Click the '✅ Done' button on that task item. 
+• The task moves to the 'Completed Tasks' list and receives a green style. 
+• Summary counts update automatically."> </p>
+
+          <h2 class="type neon" data-text="3. Undo a completed task"> </h2>
+          <p class="type" data-text="• If you marked a task finished by accident, open the 'Completed Tasks' list. 
+• Click the '↩️ Undo' button on the completed item. 
+• The task returns to 'Pending Tasks' and Summary updates."> </p>
+
+          <h2 class="type neon" data-text="4. Delete a task"> </h2>
+          <p class="type" data-text="• To permanently remove any task (pending or completed), press the '🗑️' trash button on the item. 
+• The task disappears and is removed from localStorage (if using the sample app)."> </p>
+
+          <h2 class="type neon" data-text="Quick integration tips (for developers)"> </h2>
+          <p class="type"
+            data-text="If you built the sample To-Do app (with global functions), you can programmatically add, toggle or delete tasks. Example snippets:">
+          </p>
+
+          <pre class="code-block">
+// add task (example)
+const newTask = { id: Date.now(), text: 'My task', completed: false };
+tasks.push(newTask);
+saveAndRender();
+
+// toggle complete (example)
+toggleTask(theTaskId);
+
+// delete (example)
+deleteTask(theTaskId);
+      </pre>
+
+          <h2 class="type neon" data-text="Troubleshooting & tips"> </h2>
+          <p class="type" data-text="• Make sure your browser allows localStorage for persistence. 
+• Use clear short task titles for quick scanning. 
+• Keyboard tips: focus the input and press Enter to add. 
+• For production, hook the form to a backend API to sync tasks across devices."> </p>
+        </section>
+      </main>
+    </div>
+  </bdy>
+
+  <div class="page4">
+
+
+  </div>
+  <script>
+    window.addEventListener("load", () => {
+      const mainContent = document.getElementById("main-content");
+      setTimeout(() => {
+        mainContent.classList.add("active");
+        const text = "Track your work hours, tasks, and productivity — all in one place, efficiently and easily.";
+        const typingElement = document.getElementById("typing-text");
+        let index = 0;
+        const speed = 40;
+        function typeWriter() {
+          if (index < text.length) {
+            typingElement.innerHTML += text.charAt(index);
+            index++;
+            setTimeout(typeWriter, speed);
+          } else {
+            typingElement.classList.add("cursor-blink");
+          }
+        }
+        typeWriter();
+      }, 300);
+
+      const paragraphs = document.querySelectorAll(".about-text");
+      paragraphs.forEach((p, pIndex) => {
+        const text = p.getAttribute("data-text");
+        let index = 0;
+        function typePara() {
+          if (index < text.length) {
+            p.innerHTML += text.charAt(index);
+            index++;
+            setTimeout(typePara, 30);
+          }
+        }
+        typePara();
+      });
+
+      const aboutLink = document.getElementById("about-link");
+      aboutLink.addEventListener("click", () => {
+        document.getElementById("page2").scrollIntoView({ behavior: "smooth" });
+      });
+    });
+
+    // 3D Clock
+    function update3DClock() {
+      const now = new Date();
+      let h = now.getHours();
+      let m = now.getMinutes();
+      let s = now.getSeconds();
+
+      h = h < 10 ? '0' + h : h;
+      m = m < 10 ? '0' + m : m;
+      s = s < 10 ? '0' + s : s;
+
+      document.getElementById('h').textContent = h;
+      document.getElementById('m').textContent = m;
+      document.getElementById('s').textContent = s;
+    }
+    setInterval(update3DClock, 1000);
+    update3DClock();
+
+    // to do list ---
+    document.addEventListener('DOMContentLoaded', () => {
+      const TYPE_SPEED = 6;
+      const PAUSE_BETWEEN = 150;
+
+      const elements = Array.from(document.querySelectorAll('.type'));
+      const replayBtn = document.getElementById('replay');
+
+      const pool = elements.map(el => ({ el, text: (el.dataset.text || '').replace(/\t/g, '  ') }));
+
+      function typeElement(targetEl, text) {
+        return new Promise(resolve => {
+          targetEl.classList.remove('typing-caret');
+          targetEl.textContent = '';
+          let i = 0;
+
+          function step() {
+            if (i >= text.length) {
+
+              setTimeout(() => {
+                targetEl.classList.remove('typing-caret');
+                resolve();
+              }, 120);
+              return;
+            }
+            const ch = text[i++];
+            targetEl.textContent += ch;
+            targetEl.classList.add('typing-caret');
+            const extra = (ch === '.' || ch === ',' || ch === '—' || ch === '\n') ? 60 : 0;
+            setTimeout(step, TYPE_SPEED + extra);
+          }
+          step();
+        });
+      }
+
+      async function runAll() {
+
+        pool.forEach(p => p.el.textContent = '');
+        for (const p of pool) {
+
+          await new Promise(r => setTimeout(r, PAUSE_BETWEEN));
+
+          p.el.setAttribute('aria-live', 'polite');
+          await typeElement(p.el, p.text);
+        }
+        replayBtn.focus();
+      }
+
+      // initial run
+      runAll();
+
+      replayBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        runAll();
+      });
+
+      document.addEventListener('keydown', (ev) => {
+        if (ev.key.toLowerCase() === 'r' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+          runAll();
+        }
+      });
+    });
+
+    
+
+  </script>
+</body>
+
+</html>

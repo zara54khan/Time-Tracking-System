@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>To-Do Manager</title>
+   <style>
+    :root {
+  --bg: #f8fafc;
+  --panel: #ffffff;
+  --text: #0f172a;
+  --primary: #2563eb;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --muted: #64748b;
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+}
+
+.app-container {
+  max-width: 700px;
+  margin: 40px auto;
+  background: var(--panel);
+  padding: 20px 30px;
+  border-radius: var(--radius);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+
+header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+header h1 {
+  margin: 0;
+}
+header p {
+  color: var(--muted);
+}
+
+section {
+  margin-bottom: 30px;
+}
+
+h2 {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  border-bottom: 2px solid var(--primary);
+  display: inline-block;
+  padding-bottom: 2px;
+}
+
+/* Add Task */
+#taskForm {
+  display: flex;
+  gap: 10px;
+}
+
+#taskInput {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: var(--radius);
+  font-size: 1rem;
+}
+
+#taskForm button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.3s;
+}
+#taskForm button:hover {
+  background: #1d4ed8;
+}
+
+/* Task Lists */
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.task {
+  background: #f1f5f9;
+  margin-bottom: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.3s;
+}
+
+.task.completed {
+  background: #dcfce7;
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.task button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-weight: bold;
+  color: var(--primary);
+  margin-left: 10px;
+  transition: color 0.2s;
+}
+
+.task button:hover {
+  color: var(--danger);
+}
+
+.summary-box {
+  background: #f1f5f9;
+  padding: 10px;
+  border-radius: var(--radius);
+  display: flex;
+  justify-content: space-around;
+}
+
+footer {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .app-container {
+    margin: 20px;
+    padding: 20px;
+  }
+  .summary-box {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+}
+
+   </style>
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <h1>📝 To-Do Manager</h1>
+      <p>Organize your tasks and track your progress easily!</p>
+    </header>
+
+    <!-- Add Task -->
+    <section id="add-task">
+      <h2>Add a New Task</h2>
+      <form id="taskForm">
+        <input type="text" id="taskInput" placeholder="Enter your task..." required />
+        <button type="submit">Add Task</button>
+      </form>
+    </section>
+
+    <!-- To-Do List -->
+    <section id="todo-list">
+      <h2>Pending Tasks</h2>
+      <ul id="pendingTasks"></ul>
+    </section>
+
+    <!-- Completed Tasks -->
+    <section id="completed-list">
+      <h2>Completed Tasks</h2>
+      <ul id="completedTasks"></ul>
+    </section>
+
+    <!-- Summary -->
+    <section id="summary">
+      <h2>Summary</h2>
+      <div class="summary-box">
+        <p>Total Tasks: <span id="totalCount">0</span></p>
+        <p>Completed: <span id="completedCount">0</span></p>
+        <p>Pending: <span id="pendingCount">0</span></p>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <p>✔️ To-Do Manager — All data saved locally</p>
+  </footer>
+  <script>
+    // script.js — To-Do List App Logic
+
+const taskForm = document.getElementById('taskForm');
+const taskInput = document.getElementById('taskInput');
+const pendingList = document.getElementById('pendingTasks');
+const completedList = document.getElementById('completedTasks');
+
+const totalCountEl = document.getElementById('totalCount');
+const completedCountEl = document.getElementById('completedCount');
+const pendingCountEl = document.getElementById('pendingCount');
+
+// LocalStorage key
+const STORAGE_KEY = 'todoAppData';
+
+// Load tasks or initialize
+let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+renderTasks();
+updateSummary();
+
+// Add new task
+taskForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = taskInput.value.trim();
+  if (!text) return;
+
+  const newTask = {
+    id: Date.now(),
+    text,
+    completed: false,
+  };
+
+  tasks.push(newTask);
+  taskInput.value = '';
+  saveAndRender();
+});
+
+// Toggle complete / delete
+function toggleTask(id) {
+  const task = tasks.find((t) => t.id === id);
+  if (task) {
+    task.completed = !task.completed;
+    saveAndRender();
+  }
+}
+
+function deleteTask(id) {
+  tasks = tasks.filter((t) => t.id !== id);
+  saveAndRender();
+}
+
+// Save to localStorage
+function saveTasks() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+}
+
+// Render lists
+function renderTasks() {
+  pendingList.innerHTML = '';
+  completedList.innerHTML = '';
+
+  tasks.forEach((task) => {
+    const li = document.createElement('li');
+    li.className = `task${task.completed ? ' completed' : ''}`;
+    li.innerHTML = `
+      <span>${task.text}</span>
+      <div>
+        <button onclick="toggleTask(${task.id})">${task.completed ? '↩️ Undo' : '✅ Done'}</button>
+        <button onclick="deleteTask(${task.id})">🗑️</button>
+      </div>
+    `;
+
+    if (task.completed) {
+      completedList.appendChild(li);
+    } else {
+      pendingList.appendChild(li);
+    }
+  });
+}
+
+// Update counts
+function updateSummary() {
+  const total = tasks.length;
+  const completed = tasks.filter((t) => t.completed).length;
+  const pending = total - completed;
+
+  totalCountEl.textContent = total;
+  completedCountEl.textContent = completed;
+  pendingCountEl.textContent = pending;
+}
+
+// Helper: save and re-render
+function saveAndRender() {
+  saveTasks();
+  renderTasks();
+  updateSummary();
+}
+
+  </script>
+</body>
+</html>

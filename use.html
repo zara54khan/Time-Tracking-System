@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>How to use the To-Do UI — Guide</title>
+    <style>
+        /* styles.css — neon dark help page */
+
+        /* Base / Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            background: #000;
+            /* black background as requested */
+            color: #e6f7ff;
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding: 32px;
+        }
+
+        /* Layout */
+        .page {
+            max-width: 980px;
+            margin: 0 auto;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+            border-radius: 12px;
+            padding: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        /* Neon common */
+        .neon {
+            color: #aaffff;
+            text-shadow:
+                0 0 6px rgba(170, 255, 255, 0.18),
+                0 0 12px rgba(170, 255, 255, 0.12),
+                0 0 24px rgba(124, 58, 237, 0.10);
+        }
+
+        /* Headings */
+        .hero h1 {
+            font-size: clamp(24px, 3.6vw, 40px);
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .hero .lead {
+            font-size: 1rem;
+            color: #bfeffc;
+            margin-bottom: 14px;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 18px
+        }
+
+        .btn {
+            background: linear-gradient(90deg, #06b6d4, #7c3aed);
+            color: #021024;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            box-shadow: 0 6px 18px rgba(124, 58, 237, 0.12);
+            transition: transform .12s ease;
+        }
+
+        .btn:active {
+            transform: translateY(1px)
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #dbeafe;
+        }
+
+        /* Steps content */
+        .steps {
+            margin-top: 6px
+        }
+
+        .steps h2 {
+            font-size: clamp(18px, 2.2vw, 24px);
+            margin-top: 18px;
+            margin-bottom: 8px;
+        }
+
+        .steps p {
+            color: #cfeff8;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            /* keep line breaks from data-text */
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        /* code block */
+        .code-block {
+            background: rgba(255, 255, 255, 0.02);
+            color: #bdefff;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            overflow: auto;
+            margin: 12px 0 20px 0;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+            font-size: .95rem;
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        .foot {
+            margin-top: 18px;
+            padding-top: 12px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.03)
+        }
+
+        .small {
+            font-size: .92rem;
+            color: #9fe7ff
+        }
+
+        /* Typing caret (shared) */
+        .typing-caret::after {
+            content: "";
+            display: inline-block;
+            width: 10px;
+            height: 1.05em;
+            margin-left: 6px;
+            background: linear-gradient(180deg, #bdf0ff, #80e0ff);
+            animation: blink 1s steps(2, end) infinite;
+            vertical-align: middle;
+            border-radius: 2px;
+            opacity: .95;
+        }
+
+        @keyframes blink {
+
+            0%,
+            50% {
+                opacity: 1
+            }
+
+            51%,
+            100% {
+                opacity: 0
+            }
+        }
+
+        /* Make typed text slightly neon too */
+        .type {
+            color: #cfffff;
+            text-shadow:
+                0 0 6px rgba(170, 255, 255, 0.14),
+                0 0 18px rgba(124, 58, 237, 0.06);
+            min-height: 1.2em;
+            display: block;
+        }
+
+        /* Responsive tweaks */
+        @media (max-width:640px) {
+            .page {
+                padding: 18px
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: flex-start
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="page">
+        <header class="hero">
+            <h1 class="type neon" data-text="How to use the To-Do UI — Step by step"> </h1>
+            <p class="lead type neon"
+                data-text="Follow these quick steps to add, complete, undo, and remove tasks in the To-Do Manager. The instructions below are typed out so you can follow along visually.">
+            </p>
+            <div class="controls">
+                <button id="replay" class="btn">🔁 Replay typing</button>
+                <a class="btn btn-ghost" href="#" id="openDemo" title="Open demo app (if you have the To-Do app)">Open
+                    To-Do demo</a>
+            </div>
+        </header>
+
+        <section class="steps">
+            <h2 class="type neon" data-text="1. Add a task"> </h2>
+            <p class="type" data-text="• Click the input box labeled 'Enter your task' and type a short description (e.g., 'Write blog post'). 
+• Press the 'Add Task' button or hit Enter. 
+• The task appears instantly in the 'Pending Tasks' list and the Summary updates."> </p>
+
+            <h2 class="type neon" data-text="2. Mark a task as completed"> </h2>
+            <p class="type" data-text="• Locate the pending task you finished. 
+• Click the '✅ Done' button on that task item. 
+• The task moves to the 'Completed Tasks' list and receives a green style. 
+• Summary counts update automatically."> </p>
+
+            <h2 class="type neon" data-text="3. Undo a completed task"> </h2>
+            <p class="type" data-text="• If you marked a task finished by accident, open the 'Completed Tasks' list. 
+• Click the '↩️ Undo' button on the completed item. 
+• The task returns to 'Pending Tasks' and Summary updates."> </p>
+
+            <h2 class="type neon" data-text="4. Delete a task"> </h2>
+            <p class="type" data-text="• To permanently remove any task (pending or completed), press the '🗑️' trash button on the item. 
+• The task disappears and is removed from localStorage (if using the sample app)."> </p>
+
+            <h2 class="type neon" data-text="Quick integration tips (for developers)"> </h2>
+            <p class="type"
+                data-text="If you built the sample To-Do app (with global functions), you can programmatically add, toggle or delete tasks. Example snippets:">
+            </p>
+
+            <pre class="code-block">
+// add task (example)
+const newTask = { id: Date.now(), text: 'My task', completed: false };
+tasks.push(newTask);
+saveAndRender();
+
+// toggle complete (example)
+toggleTask(theTaskId);
+
+// delete (example)
+deleteTask(theTaskId);
+      </pre>
+
+            <h2 class="type neon" data-text="Troubleshooting & tips"> </h2>
+            <p class="type" data-text="• Make sure your browser allows localStorage for persistence. 
+• Use clear short task titles for quick scanning. 
+• Keyboard tips: focus the input and press Enter to add. 
+• For production, hook the form to a backend API to sync tasks across devices."> </p>
+        </section>
+
+        <footer class="foot">
+            <p class="type neon small" data-text="Made with ⚡ — neon typewriter help page."> </p>
+        </footer>
+    </main>
+
+    <script>
+
+        // script.js — Typewriter for headings & paragraphs, with replay control
+        // All elements with class="type" will be filled from their data-text attribute
+        // The script types elements in sequence (top to bottom) for a step-by-step feel.
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const TYPE_SPEED = 28;      // ms per character (typing speed)
+            const PAUSE_BETWEEN = 400;  // ms pause between elements
+            const elements = Array.from(document.querySelectorAll('.type'));
+            const replayBtn = document.getElementById('replay');
+
+            // store original texts
+            const pool = elements.map(el => ({ el, text: (el.dataset.text || '').replace(/\t/g, '  ') }));
+
+            // type a single element, preserving line breaks
+            function typeElement(targetEl, text) {
+                return new Promise(resolve => {
+                    targetEl.classList.remove('typing-caret');
+                    targetEl.textContent = '';
+                    let i = 0;
+
+                    // We'll type character-by-character but respect newline characters
+                    function step() {
+                        if (i >= text.length) {
+                            // brief pause at the end, then resolve
+                            setTimeout(() => {
+                                targetEl.classList.remove('typing-caret');
+                                resolve();
+                            }, 120);
+                            return;
+                        }
+                        // append next char
+                        const ch = text[i++];
+                        targetEl.textContent += ch;
+                        // add caret class while typing
+                        targetEl.classList.add('typing-caret');
+                        // variable speed for punctuation for more natural feel
+                        const extra = (ch === '.' || ch === ',' || ch === '—' || ch === '\n') ? 60 : 0;
+                        setTimeout(step, TYPE_SPEED + extra);
+                    }
+                    step();
+                });
+            }
+
+            // run typing across all elements sequentially
+            async function runAll() {
+                // clear existing content
+                pool.forEach(p => p.el.textContent = '');
+                for (const p of pool) {
+                    // small pause
+                    await new Promise(r => setTimeout(r, PAUSE_BETWEEN));
+                    // ensure visible (for accessibility)
+                    p.el.setAttribute('aria-live', 'polite');
+                    await typeElement(p.el, p.text);
+                }
+                // done — focus replay for keyboard users
+                replayBtn.focus();
+            }
+
+            // initial run
+            runAll();
+
+            // replay button: re-run animation
+            replayBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                runAll();
+            });
+
+            // Accessibility tip: pressing "r" will replay typing
+            document.addEventListener('keydown', (ev) => {
+                if (ev.key.toLowerCase() === 'r' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                    runAll();
+                }
+            });
+        });
+
+
+    </script>
+</body>
+
+</html>
