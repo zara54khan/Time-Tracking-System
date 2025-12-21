@@ -1,36 +1,44 @@
-package com.timetrack;
+package com.timetracking.auth;
 
+import com.timetracking.db.DBConnection;
+
+import javax.servlet.*;
+import javax.servlet.http.*;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.*;
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
 
 public class LoginServlet extends HttpServlet {
 
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse res)
+            throws ServletException, IOException {
+
+        res.setContentType("application/json");
+        PrintWriter out = res.getWriter();
 
         String email = req.getParameter("email");
-        String pass = req.getParameter("password");
+        String password = req.getParameter("password");
 
-        try{
-            Connection con = Database.getConnection();
+        try (Connection con = DBConnection.getConnection()) {
 
             PreparedStatement ps = con.prepareStatement(
-                "SELECT * FROM users WHERE email=? AND password=?");
-
-            ps.setString(1,email);
-            ps.setString(2,pass);
+                "SELECT id FROM users WHERE email=? AND password=?");
+            ps.setString(1, email);
+            ps.setString(2, password);
 
             ResultSet rs = ps.executeQuery();
 
-            if(rs.next()){
-                resp.sendRedirect("index.html");
-            }else{
-                resp.getWriter().println("Invalid Login");
+            if (rs.next()) {
+                HttpSession session = req.getSession();
+                session.setAttribute("userEmail", email);
+                out.print("{\"status\":\"success\"}");
+            } else {
+                out.print("{\"status\":\"fail\"}");
             }
 
-        }catch (Exception e){
-            resp.getWriter().println("Login Failed");
+        } catch (Exception e) {
+            e.printStackTrace();
+            out.print("{\"status\":\"error\"}");
         }
     }
 }
