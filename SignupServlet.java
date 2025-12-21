@@ -1,33 +1,47 @@
-package com.timetrack;
+package com.timetracking.auth;
 
+import com.timetracking.db.DBConnection;
+
+import javax.servlet.*;
+import javax.servlet.http.*;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.*;
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
 
 public class SignupServlet extends HttpServlet {
 
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String name = req.getParameter("name");
+    protected void doPost(HttpServletRequest req, HttpServletResponse res)
+            throws ServletException, IOException {
+
+        res.setContentType("application/json");
+        PrintWriter out = res.getWriter();
+
         String email = req.getParameter("email");
-        String pass = req.getParameter("password");
+        String password = req.getParameter("password");
 
-        try {
-            Connection con = Database.getConnection();
+        try (Connection con = DBConnection.getConnection()) {
 
-            PreparedStatement ps = con.prepareStatement(
-                "INSERT INTO users(name,email,password) VALUES(?,?,?)");
+            PreparedStatement check =
+                con.prepareStatement("SELECT id FROM users WHERE email=?");
+            check.setString(1, email);
+            ResultSet rs = check.executeQuery();
 
-            ps.setString(1,name);
-            ps.setString(2,email);
-            ps.setString(3,pass);
+            if (rs.next()) {
+                out.print("{\"status\":\"exists\"}");
+                return;
+            }
 
-            ps.executeUpdate();
+            PreparedStatement insert =
+                con.prepareStatement("INSERT INTO users(email,password) VALUES (?,?)");
+            insert.setString(1, email);
+            insert.setString(2, password);
+            insert.executeUpdate();
 
-            resp.sendRedirect("logintime.html");
+            out.print("{\"status\":\"success\"}");
 
         } catch (Exception e) {
-            resp.getWriter().println("Signup Failed");
+            e.printStackTrace();
+            out.print("{\"status\":\"error\"}");
         }
     }
 }
