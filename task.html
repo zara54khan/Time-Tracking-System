@@ -1,123 +1,103 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>To-Do Manager</title>
+package com.timetracking.task;
 
-<!-- 🔒 YOUR ORIGINAL CSS — UNTOUCHED -->
-<style>
-/* (PASTE YOUR FULL ORIGINAL CSS HERE — EXACTLY AS YOU SENT IT)
-   NOTHING IS REMOVED OR MODIFIED */
-</style>
-</head>
+import com.timetracking.db.DBConnection;
 
-<body>
-<div class="app-container">
-  <header>
-    <h1>📝 To-Do Manager</h1>
-    <p>Organize your tasks and track your progress easily!</p>
-  </header>
+import javax.servlet.*;
+import javax.servlet.http.*;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.*;
 
-  <section id="add-task">
-    <h2>Add a New Task</h2>
-    <form id="taskForm">
-      <input type="text" id="taskInput" placeholder="Enter your task..." required />
-      <button type="submit">Add Task</button>
-    </form>
-  </section>
+public class TaskServlet extends HttpServlet {
 
-  <section id="todo-list">
-    <h2>Pending Tasks</h2>
-    <ul id="pendingTasks"></ul>
-  </section>
+    protected void doGet(HttpServletRequest req, HttpServletResponse res)
+            throws IOException {
 
-  <section id="completed-list">
-    <h2>Completed Tasks</h2>
-    <ul id="completedTasks"></ul>
-  </section>
+        res.setContentType("application/json");
+        PrintWriter out = res.getWriter();
 
-  <section id="summary">
-    <h2>Summary</h2>
-    <div class="summary-box">
-      <p>Total Tasks: <span id="totalCount">0</span></p>
-      <p>Completed: <span id="completedCount">0</span></p>
-      <p>Pending: <span id="pendingCount">0</span></p>
-    </div>
-  </section>
-</div>
+        HttpSession session = req.getSession(false);
+        if (session == null) return;
 
-<script>
-const taskForm = document.getElementById("taskForm");
-const taskInput = document.getElementById("taskInput");
-const pendingList = document.getElementById("pendingTasks");
-const completedList = document.getElementById("completedTasks");
+        String email = (String) session.getAttribute("userEmail");
 
-const totalCountEl = document.getElementById("totalCount");
-const completedCountEl = document.getElementById("completedCount");
-const pendingCountEl = document.getElementById("pendingCount");
+        try (Connection con = DBConnection.getConnection()) {
 
-// Load tasks from backend
-function loadTasks() {
-  fetch("tasks")
-    .then(res => res.json())
-    .then(tasks => {
-      pendingList.innerHTML = "";
-      completedList.innerHTML = "";
+            PreparedStatement ps = con.prepareStatement(
+                "SELECT * FROM tasks WHERE user_email=?");
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
 
-      let completed = 0;
+            StringBuilder json = new StringBuilder("[");
+            while (rs.next()) {
+                json.append("{")
+                    .append("\"id\":").append(rs.getInt("id")).append(",")
+                    .append("\"task\":\"").append(rs.getString("task")).append("\",")
+                    .append("\"completed\":").append(rs.getBoolean("completed"))
+                    .append("},");
+            }
 
-      tasks.forEach(task => {
-        const li = document.createElement("li");
-        li.className = "task" + (task.completed ? " completed" : "");
+            if (json.length() > 1) json.deleteCharAt(json.length() - 1);
+            json.append("]");
 
-        li.innerHTML = `
-          <span>${task.task}</span>
-          <div>
-            <button onclick="toggleTask(${task.id})">
-              ${task.completed ? "↩️ Undo" : "✅ Done"}
-            </button>
-            <button onclick="deleteTask(${task.id})">🗑️</button>
-          </div>
-        `;
+            out.print(json.toString());
 
-        if (task.completed) {
-          completed++;
-          completedList.appendChild(li);
-        } else {
-          pendingList.appendChild(li);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-      });
+    }
 
-      totalCountEl.textContent = tasks.length;
-      completedCountEl.textContent = completed;
-      pendingCountEl.textContent = tasks.length - completed;
-    });
+    protected void doPost(HttpServletRequest req, HttpServletResponse res)
+            throws IOException {
+
+        HttpSession session = req.getSession(false);
+        String email = (String) session.getAttribute("userEmail");
+        String task = req.getParameter("task");
+
+        try (Connection con = DBConnection.getConnection()) {
+
+            PreparedStatement ps = con.prepareStatement(
+                "INSERT INTO tasks(user_email,task) VALUES (?,?)");
+            ps.setString(1, email);
+            ps.setString(2, task);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected void doPut(HttpServletRequest req, HttpServletResponse res)
+            throws IOException {
+
+        int id = Integer.parseInt(req.getParameter("id"));
+
+        try (Connection con = DBConnection.getConnection()) {
+
+            PreparedStatement ps = con.prepareStatement(
+                "UPDATE tasks SET completed = NOT completed WHERE id=?");
+            ps.setInt(1, id);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected void doDelete(HttpServletRequest req, HttpServletResponse res)
+            throws IOException {
+
+        int id = Integer.parseInt(req.getParameter("id"));
+
+        try (Connection con = DBConnection.getConnection()) {
+
+            PreparedStatement ps =
+                con.prepareStatement("DELETE FROM tasks WHERE id=?");
+            ps.setInt(1, id);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
-
-taskForm.addEventListener("submit", e => {
-  e.preventDefault();
-
-  fetch("tasks", {
-    method: "POST",
-    headers: {"Content-Type": "application/x-www-form-urlencoded"},
-    body: `task=${encodeURIComponent(taskInput.value)}`
-  }).then(() => {
-    taskInput.value = "";
-    loadTasks();
-  });
-});
-
-function toggleTask(id) {
-  fetch("tasks?id=" + id, { method: "PUT" })
-    .then(loadTasks);
-}
-
-function deleteTask(id) {
-  fetch("tasks?id=" + id, { method: "DELETE" })
-    .then(loadTasks);
-}
-
-loadTasks();
-</script>
-</body>
-</html>
