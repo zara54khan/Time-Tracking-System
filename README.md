@@ -243,5 +243,4 @@ CREATE TABLE contacts (
 ## Authors
 
 * **Rakshita** – Frontend Design (HTML, CSS, JavaScript)
-* **Zara** – Backend Development, JDBC, Database Design
-* **Saurav Kumar** – Servlet Development and Request Handling
+* **Zara** – Backend Development, JDBC, Database Design, Request Handling
